@@ -5,7 +5,7 @@ const { GoogleGenAI } = require('@google/genai');
 
 const app = express();
 const port = process.env.PORT || 3000;
-
+console.log("RENDER KEY CHECK:", process.env.GEMINI_API_KEY ? "Key is loaded!" : "KEY IS STILL MISSING!");
 // Middleware to allow data transfer and increase the file size limit for images
 app.use(cors());
 app.use(express.json({ limit: '50mb' })); 
