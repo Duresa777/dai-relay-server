@@ -41,7 +41,12 @@ app.post('/api/ask', async (req, res) => {
         {
           role: 'user',
           parts: [
-            { text: promptText },
+            { 
+              text: `You are an expert document and dashboard parsing tool. Analyze the provided image. 
+                     Extract the key data points (such as dates, merchant names, totals, or dashboard metrics).
+                     Return ONLY a valid JSON array of objects representing the data rows.
+                     Do not include markdown formatting or conversational text.` 
+            },
             {
               inlineData: {
                 mimeType: 'image/jpeg',
@@ -50,10 +55,13 @@ app.post('/api/ask', async (req, res) => {
             }
           ]
         }
-      ]
+      ],
+      config: {
+        responseMimeType: "application/json"
+      }
     });
 
-    // 4. Send the answer back to the desktop app
+    // 4. Send the structured JSON back to the desktop app
     res.json({ text: response.text });
   } catch (error) {
     console.error('Gemini error:', error);
