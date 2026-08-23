@@ -1,75 +1,64 @@
-require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
-const { GoogleGenAI } = require('@google/genai');
+const { GoogleGenerativeAI } = require('@google/generative-ai');
 
 const app = express();
 const port = process.env.PORT || 3000;
-console.log("RENDER KEY CHECK:", process.env.GEMINI_API_KEY ? "Key is loaded!" : "KEY IS STILL MISSING!");
-// Middleware to allow data transfer and increase the file size limit for images
+
+// Enable CORS and increase body limit for base64 image data
 app.use(cors());
-app.use(express.json({ limit: '50mb' })); 
+app.use(express.json({ limit: '25mb' }));
 
-// Initialize your Master Gemini AI
-const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
+const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 
-// A simple route to check if the server is awake
-app.get('/', (req, res) => {
-  res.send('D AI Relay Server is live!');
-});
-
-// The main route that your desktop app will talk to
 app.post('/api/ask', async (req, res) => {
-  const { licenseKey, promptText, imageBase64 } = req.body;
-
-  // 1. Check if they provided a key
-  if (!licenseKey) {
-    return res.status(401).json({ error: 'License key is required.' });
-  }
-
-  // 2. Placeholder for Lemon Squeezy logic
-  // For testing today, we will use a secret dummy password: "test-pro-key"
-  if (licenseKey !== 'test-pro-key') {
-    return res.status(403).json({ error: 'Invalid or expired license key.' });
-  }
-
-  // 3. Send to Gemini
   try {
-    const response = await ai.models.generateContent({
-      model: 'gemini-3.6-flash',
-      contents: [
-        {
-          role: 'user',
-          parts: [
-            { 
-              text: `You are an expert document and dashboard parsing tool. Analyze the provided image. 
-                     Extract the key data points (such as dates, merchant names, totals, or dashboard metrics).
-                     Return ONLY a valid JSON array of objects representing the data rows.
-                     Do not include markdown formatting or conversational text.` 
-            },
-            {
-              inlineData: {
-                mimeType: 'image/jpeg',
-                data: imageBase64
-              }
-            }
-          ]
-        }
-      ],
-      config: {
-        responseMimeType: "application/json"
+    const { appSecret, promptText, imageBase64 } = req.body;
+
+    // 1. Secret handshake validation
+    if (appSecret !== 'glance-ms-store-2026') {
+      return res.status(403).json({ error: 'Unauthorized app request.' });
+    }
+
+    if (!imageBase64) {
+      return res.status(400).json({ error: 'No image data provided.' });
+    }
+
+    // 2. Call Gemini
+    const model = genAI.getGenerativeModel({
+      model: 'gemini-1.5-flash',
+      generationConfig: {
+        responseMimeType: 'application/json'
       }
     });
 
-    // 4. Send the structured JSON back to the desktop app
-    res.json({ text: response.text });
+    const imagePart = {
+      inlineData: {
+        data: imageBase64,
+        mimeType: 'image/jpeg'
+      }
+    };
+
+    const prompt = `
+Extract all relevant structured data from this screenshot as a JSON array of objects.
+Every row or item in the view should be an object in the array with consistent keys across all objects.
+Return ONLY a valid JSON array.
+`;
+
+    const result = await model.generateContent([prompt, imagePart]);
+    const responseText = result.response.text();
+
+    res.json({ text: responseText });
   } catch (error) {
     console.error('Gemini error:', error);
-    res.status(500).json({ error: 'Failed to process request.' });
+    res.status(500).json({ error: 'Failed to process image with AI.' });
   }
 });
 
-// Start the server
+app.get('/health', (req, res) => {
+  res.json({ status: 'ok', service: 'Glance Relay Server' });
+});
+
 app.listen(port, () => {
-  console.log(`Relay server running on http://localhost:${port}`);
+  console.log(`Relay server running on port ${port}`);
 });
