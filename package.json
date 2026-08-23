@@ -1,20 +1,14 @@
 {
   "name": "dai-relay-server",
   "version": "1.0.0",
-  "description": "",
+  "description": "Relay server for Glance AI screen extractor",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "node index.js"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "type": "commonjs",
   "dependencies": {
-    "@google/genai": "^2.18.0",
-    "axios": "^1.19.0",
-    "cors": "^2.8.6",
-    "dotenv": "^17.4.2",
-    "express": "^5.2.1"
+    "@google/generative-ai": "^0.14.1",
+    "cors": "^2.8.5",
+    "express": "^4.19.2"
   }
 }
