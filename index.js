@@ -2,8 +2,6 @@ const express = require('express');
 const cors = require('cors');
 const { GoogleGenerativeAI } = require('@google/generative-ai');
 // Required to make the Lemon Squeezy API call
-const fetch = (...args) => import('node-fetch').then(({ default: fetch }) => fetch(...args));
-
 const app = express();
 const port = process.env.PORT || 3000;
 
