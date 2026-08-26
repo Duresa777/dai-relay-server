@@ -48,7 +48,7 @@ app.post('/api/ask', async (req, res) => {
 
     // 3. Call Gemini (Updated to the correct 1.5-flash model)
     const model = genAI.getGenerativeModel({
-      model: 'gemini-1.5-flash', 
+      model: 'gemini-3.6-flash', 
       generationConfig: {
         responseMimeType: 'application/json'
       }
