@@ -31,10 +31,28 @@ app.post('/api/ask', async (req, res) => {
       }
     };
 
-    // 4. Send to Google and return the result
-    const result = await model.generateContent([promptText, imagePart]);
-    const response = await result.response;
-    const text = response.text();
+    let retries = 3;
+    let delay = 2000; // Start with a 2-second delay
+    let text = "";
+
+    // Exponential backoff loop
+    while (retries > 0) {
+      try {
+        const result = await model.generateContent([promptText, imagePart]);
+        const response = await result.response;
+        text = response.text();
+        break; // Success, exit the retry loop
+      } catch (error) {
+        if (error.status === 503 && retries > 1) {
+          console.log(`Google API overloaded (503). Retrying in ${delay / 1000} seconds...`);
+          await new Promise(resolve => setTimeout(resolve, delay));
+          retries--;
+          delay *= 2; // Double the delay for the next attempt (4s)
+        } else {
+          throw error; // Re-throw if it's not a 503 or out of retries
+        }
+      }
+    }
 
     res.json({ text: text });
   } catch (error) {
