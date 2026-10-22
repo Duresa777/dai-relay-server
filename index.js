@@ -22,7 +22,7 @@ app.post('/api/ask', async (req, res) => {
 
     // 3. Initialize Gemini using the user's specific key
     const genAI = new GoogleGenerativeAI(userKey);
-    const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
+    const model = genAI.getGenerativeModel({ model: 'gemini-3.6-flash' });
 
     const imagePart = {
       inlineData: {
